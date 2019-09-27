@@ -25,6 +25,7 @@ namespace LLVMTest
             LLVM.PositionBuilderAtEnd(builder, entry);
             LLVMValueRef tmp = LLVM.BuildAdd(builder, LLVM.GetParam(sum, 0), LLVM.GetParam(sum, 1), "tmp");
             LLVM.BuildRet(builder, tmp);
+            LLVM.SetLinkage(sum, LLVMLinkage.LLVMExternalLinkage);
 
             if (LLVM.VerifyModule(mod, LLVMVerifierFailureAction.LLVMPrintMessageAction, out var error) != Success)
             {
@@ -60,17 +61,18 @@ namespace LLVMTest
 
             LLVM.DisposeBuilder(builder);
             LLVM.DisposeExecutionEngine(engine);*/
-
+            var aa = LLVM.GetLinkage(sum);
+            LLVM.DumpModule(mod);
             if (LLVM.GetTargetFromTriple("x86_64-pc-win32", out var target, out error) == Success)
             {
                 var targetMachine = LLVM.CreateTargetMachine(target, "x86_64-pc-win32", "generic", "", LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault, LLVMRelocMode.LLVMRelocDefault, LLVMCodeModel.LLVMCodeModelDefault);
                 var dl = LLVM.CreateTargetDataLayout(targetMachine);
                 LLVM.SetModuleDataLayout(mod, dl);
                 LLVM.SetTarget(mod, "x86_64-pc-win32");
-                byte[] buffer = System.Text.Encoding.Default.GetBytes("test.o\0");
+                byte[] buffer = System.Text.Encoding.Default.GetBytes("test.s\0");
                 fixed (byte* ptr = buffer)
                 {
-                    LLVM.TargetMachineEmitToFile(targetMachine, mod, new IntPtr(ptr), LLVMCodeGenFileType.LLVMObjectFile, out error);
+                    LLVM.TargetMachineEmitToFile(targetMachine, mod, new IntPtr(ptr), LLVMCodeGenFileType.LLVMAssemblyFile, out error);
                     
                 }
             }
