@@ -9,4 +9,8 @@
     <PackageReference Include="SharpDisasm" Version="1.1.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Methods\BasicBlocks\" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "X86ToLLVMCLI": {
+      "commandName": "Project",
+      "commandLineArgs": "E:\\SVN\\LLVMPlayground\\Playground\\Debug\\TranspileTarget.exe"
+    }
+  }
+}
