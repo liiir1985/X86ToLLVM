@@ -9,17 +9,40 @@ namespace X86ToLLVM.Methods
 {
     class X86Method
     {
-        X86Disassembler dis;
         Executables exe;
         long address;
-        public X86Method(Executables exe, X86Disassembler dis, long address)
+        bool initialized = false;
+        Dictionary<long, BasicBlock> basicBlocks = new Dictionary<long, BasicBlock>();
+        BasicBlock entryBlock;
+        public Dictionary<long, BasicBlock> BasicBlocks => basicBlocks;
+        public Executables Executable => exe;
+
+        public X86Method(Executables exe, long address)
         {
             this.exe = exe;
-            this.dis = dis;
             this.address = address;
+        }
 
+        public void Initialize()
+        {
+            if (!initialized)
+            {
+                entryBlock = new BasicBlock(this, address);
+                basicBlocks[address] = entryBlock;
+                entryBlock.ParseInstruction();
+                initialized = true;
+            }
+        }
 
-            var ins = dis.ReadNextInstruction();
+        public BasicBlock GetOrCreateBlock(long addr)
+        {
+            if (!basicBlocks.TryGetValue(addr, out var block))
+            {
+                block = new BasicBlock(this, addr);
+                basicBlocks[addr] = block;
+                block.ParseInstruction();                
+            }
+            return block;
         }
     }
 }

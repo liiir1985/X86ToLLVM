@@ -12,11 +12,21 @@ namespace X86ToLLVM.Utils
     {
         public static X86Method CreateMethodFromRVA(this Executables exe, long rva)
         {
+            return new X86Method(exe, exe.BaseAddress + rva);
+        }
+
+        public static X86Disassembler CreateDisassemblerFromRVA(this Executables exe, long rva)
+        {
             var asm = exe.Assembly;
             var reader = asm.ReadingContext.Reader.CreateSubReader(asm.RvaToFileOffset(rva));
             var sec = asm.GetSectionHeaderByRva(rva);
             var dis = new AsmResolver.X86.X86Disassembler(reader, exe.BaseAddress + sec.VirtualAddress - sec.PointerToRawData);
-            return new X86Method(exe, dis, exe.BaseAddress + rva);
+            return dis;
+        }
+
+        public static X86Disassembler CreateDisassemblerFromAddress(this Executables exe, long address)
+        {
+            return CreateDisassemblerFromRVA(exe, address - exe.BaseAddress);
         }
     }
 }
