@@ -6,3 +6,5 @@ Playground/LLVMTest/bin
 Playground/TranspileTarget/Debug/
 Playground/X86ToLLVM/bin
 Playground/X86ToLLVM/obj
+Playground/X86ToLLVMCLI/obj
+Playground/X86ToLLVMCLI/bin
