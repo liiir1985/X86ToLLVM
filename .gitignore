@@ -1,4 +1,8 @@
 
 Playground/.vs
+Playground/Debug
 Playground/LLVMTest/obj
 Playground/LLVMTest/bin
+Playground/TranspileTarget/Debug/
+Playground/X86ToLLVM/bin
+Playground/X86ToLLVM/obj
