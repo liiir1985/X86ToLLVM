@@ -35,11 +35,23 @@ namespace X86ToLLVM.Methods
                 bool shouldBreak = false;
                 do
                 {
-                    ins = dis.ReadNextInstruction();                    
+                    ins = dis.ReadNextInstruction();
+                    ProcessPendingAddress(ins);
                     instructions.Add(ins);
                 }
                 while (!ins.IsTerminator());
                 ProcessNextBlocks(ins);
+            }
+        }
+
+        void ProcessPendingAddress(X86Instruction ins)
+        {
+            switch (ins.Mnemonic)
+            {
+                case X86Mnemonic.Call:
+                case X86Mnemonic.Call_Far:
+                    method.Executable.RequestNewMethodAddress((long)(ulong)ins.Operand1.Value);
+                    break;
             }
         }
 

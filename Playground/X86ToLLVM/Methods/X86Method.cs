@@ -16,6 +16,7 @@ namespace X86ToLLVM.Methods
         BasicBlock entryBlock;
         public Dictionary<long, BasicBlock> BasicBlocks => basicBlocks;
         public Executables Executable => exe;
+        public long Address => address;
 
         public X86Method(Executables exe, long address)
         {

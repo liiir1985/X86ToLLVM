@@ -15,6 +15,11 @@ namespace X86ToLLVM.Utils
             return new X86Method(exe, exe.BaseAddress + rva);
         }
 
+        public static X86Method CreateMethodFromAddress(this Executables exe, long address)
+        {
+            return new X86Method(exe, address);
+        }
+
         public static X86Disassembler CreateDisassemblerFromRVA(this Executables exe, long rva)
         {
             var asm = exe.Assembly;
