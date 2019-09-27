@@ -26,12 +26,11 @@ namespace LLVMTest
             LLVMValueRef tmp = LLVM.BuildAdd(builder, LLVM.GetParam(sum, 0), LLVM.GetParam(sum, 1), "tmp");
             LLVM.BuildRet(builder, tmp);
             LLVM.SetLinkage(sum, LLVMLinkage.LLVMExternalLinkage);
-
+            LLVM.SetDLLStorageClass(sum, LLVMDLLStorageClass.LLVMDLLExportStorageClass);
             if (LLVM.VerifyModule(mod, LLVMVerifierFailureAction.LLVMPrintMessageAction, out var error) != Success)
             {
                 Console.WriteLine($"Error: {error}");
             }
-
             //LLVM.LinkInMCJIT();
 
             LLVM.InitializeX86TargetMC();
@@ -69,10 +68,10 @@ namespace LLVMTest
                 var dl = LLVM.CreateTargetDataLayout(targetMachine);
                 LLVM.SetModuleDataLayout(mod, dl);
                 LLVM.SetTarget(mod, "x86_64-pc-win32");
-                byte[] buffer = System.Text.Encoding.Default.GetBytes("test.s\0");
+                byte[] buffer = System.Text.Encoding.Default.GetBytes("test.o\0");
                 fixed (byte* ptr = buffer)
                 {
-                    LLVM.TargetMachineEmitToFile(targetMachine, mod, new IntPtr(ptr), LLVMCodeGenFileType.LLVMAssemblyFile, out error);
+                    LLVM.TargetMachineEmitToFile(targetMachine, mod, new IntPtr(ptr), LLVMCodeGenFileType.LLVMObjectFile, out error);
                     
                 }
             }
