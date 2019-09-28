@@ -14,8 +14,10 @@ namespace X86ToLLVM.Methods
         public long EndAddress { get; private set; }
         List<X86Instruction> instructions = new List<X86Instruction>();
         List<BasicBlock> nextBlocks = new List<BasicBlock>();
+        List<BasicBlock> prevBlocks = new List<BasicBlock>();
         public List<X86Instruction> Instructions => instructions;
         public List<BasicBlock> NextBlocks => nextBlocks;
+        public List<BasicBlock> PreviousBlocks => prevBlocks;
         
         X86Method method;
         bool initialized;
@@ -40,8 +42,39 @@ namespace X86ToLLVM.Methods
                     instructions.Add(ins);
                 }
                 while (!ins.IsTerminator());
+                EndAddress = ins.Offset;
                 ProcessNextBlocks(ins);
             }
+        }
+
+        public bool IsAddressInsideScope(long addr)
+        {
+            return addr >= StartAddress && addr <= EndAddress;
+        }
+
+        public BasicBlock SplitAtAddress(long addr)
+        {
+            int idx = GetIndexOfAddress(addr);
+            BasicBlock res = new BasicBlock(method, addr);
+            for(int i = idx; i < instructions.Count; i++)
+            {
+                res.instructions.Add(instructions[i]);
+            }
+            instructions.RemoveRange(idx, instructions.Count - idx);
+            nextBlocks.Add(res);
+            res.prevBlocks.Add(this);
+            res.initialized = true;
+            return res;
+        }
+
+        int GetIndexOfAddress(long addr)
+        {
+            for(int i = 0; i < instructions.Count; i++)
+            {
+                if (instructions[i].Offset == addr)
+                    return i;
+            }
+            return -1;
         }
 
         void ProcessPendingAddress(X86Instruction ins)
@@ -57,16 +90,33 @@ namespace X86ToLLVM.Methods
 
         void ProcessNextBlocks(X86Instruction ins)
         {
+            long target = 0;
+            BasicBlock nb = null;
             switch (ins.Mnemonic)
             {
                 case X86Mnemonic.Jmp:
                     {
-                        long target = (long)(ulong)ins.Operand1.Value;
-                        var nb = method.GetOrCreateBlock(target);
+                        target = (long)(ulong)ins.Operand1.Value;
+                        nb = method.GetOrCreateBlock(target);
                         nextBlocks.Add(nb);
+                        nb.prevBlocks.Add(this);
                     }
                     break;
                 case X86Mnemonic.Retn:
+                    break;
+                case X86Mnemonic.Je:
+                case X86Mnemonic.Jne:
+                    {
+                        target = (long)(ulong)ins.Operand1.Value;
+                        nb = method.GetOrCreateBlock(target);
+                        nextBlocks.Add(nb);
+                        nb.prevBlocks.Add(this);
+
+                        target = ins.Offset + ins.ComputeSize();
+                        nb = method.GetOrCreateBlock(target);
+                        nextBlocks.Add(nb);
+                        nb.prevBlocks.Add(this);
+                    }
                     break;
                 default:
                     throw new NotImplementedException();

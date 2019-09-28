@@ -12,9 +12,11 @@ namespace X86ToLLVM.Methods
         Executables exe;
         long address;
         bool initialized = false;
-        Dictionary<long, BasicBlock> basicBlocks = new Dictionary<long, BasicBlock>();
+        Dictionary<long, BasicBlock> basicBlockMapping = new Dictionary<long, BasicBlock>();
+        List<BasicBlock> basicBlocks = new List<BasicBlock>();
         BasicBlock entryBlock;
-        public Dictionary<long, BasicBlock> BasicBlocks => basicBlocks;
+        public List<BasicBlock> BasicBlocks => basicBlocks;
+        public BasicBlock EntryBlock => entryBlock;
         public Executables Executable => exe;
         public long Address => address;
 
@@ -29,7 +31,8 @@ namespace X86ToLLVM.Methods
             if (!initialized)
             {
                 entryBlock = new BasicBlock(this, address);
-                basicBlocks[address] = entryBlock;
+                basicBlockMapping[address] = entryBlock;
+                basicBlocks.Add(entryBlock);
                 entryBlock.ParseInstruction();
                 initialized = true;
             }
@@ -37,11 +40,27 @@ namespace X86ToLLVM.Methods
 
         public BasicBlock GetOrCreateBlock(long addr)
         {
-            if (!basicBlocks.TryGetValue(addr, out var block))
+            if (!basicBlockMapping.TryGetValue(addr, out var block))
             {
-                block = new BasicBlock(this, addr);
-                basicBlocks[addr] = block;
-                block.ParseInstruction();                
+                bool found = false;
+                foreach(var i in basicBlocks)
+                {
+                    if (i.IsAddressInsideScope(addr))
+                    {
+                        block = i.SplitAtAddress(addr);
+                        basicBlockMapping[addr] = block;
+                        basicBlocks.Add(block);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    block = new BasicBlock(this, addr);
+                    basicBlockMapping[addr] = block;
+                    basicBlocks.Add(block);
+                    block.ParseInstruction();
+                }
             }
             return block;
         }
