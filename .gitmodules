@@ -1,0 +1,3 @@
+[submodule "Playground/Dependencies/AsmResolver"]
+	path = Playground/Dependencies/AsmResolver
+	url = https://github.com/liiir1985/AsmResolver.git

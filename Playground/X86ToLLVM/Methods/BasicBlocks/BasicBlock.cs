@@ -83,7 +83,16 @@ namespace X86ToLLVM.Methods
             {
                 case X86Mnemonic.Call:
                 case X86Mnemonic.Call_Far:
-                    method.Executable.RequestNewMethodAddress((long)(ulong)ins.Operand1.Value);
+                    switch (ins.Operand1.OperandUsage)
+                    {
+                        case X86OperandUsage.Normal:
+                            method.Executable.RequestNewMethodAddress((long)(ulong)ins.Operand1.Value);
+                            break;
+                        case X86OperandUsage.DwordPointer:
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }                    
                     break;
             }
         }
