@@ -105,14 +105,18 @@ namespace X86ToLLVM.Methods
             {
                 case X86Mnemonic.Jmp:
                     {
-                        target = (long)(ulong)ins.Operand1.Value;
-                        nb = method.GetOrCreateBlock(target);
-                        nextBlocks.Add(nb);
-                        nb.prevBlocks.Add(this);
+                        if (ins.Operand1.OperandUsage == X86OperandUsage.Normal)
+                        {
+                            target = (long)(ulong)ins.Operand1.Value;
+                            nb = method.GetOrCreateBlock(target);
+                            nextBlocks.Add(nb);
+                            nb.prevBlocks.Add(this);
+                        }
                     }
                     break;
                 case X86Mnemonic.Retn:
                     break;
+                case X86Mnemonic.Jl:
                 case X86Mnemonic.Je:
                 case X86Mnemonic.Jne:
                     {

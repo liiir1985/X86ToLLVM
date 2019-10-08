@@ -5,8 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AsmResolver" Version="3.0.3" />
     <PackageReference Include="SharpDisasm" Version="1.1.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dependencies\AsmResolver\AsmResolver\AsmResolver.csproj" />
   </ItemGroup>
 
 </Project>
